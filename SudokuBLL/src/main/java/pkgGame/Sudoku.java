@@ -70,6 +70,8 @@ public class Sudoku extends LatinSquare {
 		int[][] puzzle = new int[iSize][iSize];
 		super.setLatinSquare(puzzle);
 		FillDiagonalRegions();
+		this.SetCells();
+		this.fillRemaining(this.cells.get(Objects.hash(0,this.iSqrtSize)));
 	}
 
 	/**
@@ -291,6 +293,11 @@ public class Sudoku extends LatinSquare {
 		}
 		
 		return true;
+	}
+	
+	public boolean isValidValue(Cell c, int num) 
+	{
+		return this.isValidValue(c.getiRow(), c.getiCol(), num);
 	}
 
 	/**
@@ -515,5 +522,45 @@ public class Sudoku extends LatinSquare {
 		hsCellRange.removeAll(hsUsedValues);
 		return hsCellRange; 
 	}
+	
+	// need to be modified
+	private void SetCells()
+	{
+		for(int iRow = 0; iRow < iSize; iRow++)
+		{
+			for(int iCol = 0; iCol < iSize; iCol++)
+			{
+				Cell c = new Cell(iRow, iCol);
+				c.setIstValidvalues(this.getAllValidCellValues(iCol, iRow));
+				c.ShuffleValidValues();
+				cells.put(c.hashCode(), c);
+				
+				//Cell c1 = cells.get(Objects.hash(2,2));
+			}
+		}
+	}
+	
+	// need to be modified
+	private boolean fillRemaining(Cell c)
+	{
+		if (c == null)
+			return true;
+		
+		for(int num : c.getIstValidvalues())
+		{
+			if(isValidValue(c, num))
+			{
+				this.getPuzzle()[c.getiRow()][c.getiCol()] = num;
+			}
+			if(fillRemaining(c.GetNextCell(c)))
+			{
+				return true;
+			}
+			this.getPuzzle()[c.getiRow()][c.getiCol()] = 0;
+		}
+		return false;
+	}
+
+
 	
 }
