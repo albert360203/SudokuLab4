@@ -1,6 +1,12 @@
 package pkgGame;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Random;
 
 import pkgHelper.LatinSquare;
@@ -34,6 +40,8 @@ public class Sudoku extends LatinSquare {
 	 */
 
 	private int iSqrtSize;
+	
+	private HashMap<Integer,Cell> cells = new HashMap<Integer, Cell>();
 
 	/**
 	 * Sudoku - for Lab #2... do the following:
@@ -410,4 +418,102 @@ public class Sudoku extends LatinSquare {
 			ar[i] = a;
 		}
 	}
+	
+	private class Cell
+	{
+		private int iRow;
+		private int iCol;
+		private ArrayList<Integer> IstValidvalues = new ArrayList<Integer>();
+		
+		public Cell(int iRow, int iCol) {
+			super();
+			this.iRow = iRow;
+			this.iCol = iCol;
+		}
+
+		public int getiRow() {
+			return iRow;
+		}
+
+		public int getiCol() {
+			return iCol;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(iRow, iCol);
+		}
+		
+		@Override
+		public boolean equals(Object o)
+		{
+			if(this==o)
+			{
+				return true;
+			}
+			if(!(o instanceof Cell))
+			{
+				return false;
+			}
+			else
+			{
+				Cell c = (Cell) o;
+				return iCol == c.iCol && iRow == c.iRow;
+			}
+		}
+
+		public ArrayList<Integer> getIstValidvalues() {
+			return IstValidvalues;
+		}
+
+		public void setIstValidvalues(HashSet<Integer> hsIstValidvalues) {
+			IstValidvalues = new ArrayList<Integer>(hsIstValidvalues);
+		}
+		
+		public void ShuffleValidValues()
+		{
+			Collections.shuffle(IstValidvalues);
+		}
+		
+		// need to be modified
+		public Cell GetNextCell(Cell c)
+		{
+			int col = 0;
+			int row = 0;
+			if(c.getiCol() >= iSize-1 && c.getiRow() >= iSize-1)
+			{
+				return null;
+			}
+			if(c.getiCol()==iSize-1)
+			{
+				row = c.getiRow()+1;
+				col = 0;
+			}
+			else
+			{
+				row = c.getiRow();
+				col = c.getiCol()+1;
+			}
+		}
+	}
+	
+	// need to be modified
+	private HashSet<Integer> getAllValidCellValues(int iCol, int iRow)
+	{
+		HashSet<Integer> hsCellRange = new HashSet<Integer>();
+		for(int i=0; i < iSize; i++)
+		{
+			hsCellRange.add(i+1);
+		}
+		HashSet<Integer> hsUsedValues = new HashSet<Integer>();
+		
+		Collections.addAll(hsUsedValues, Arrays.stream(super.getRow(iRow)).boxed().toArray(Integer[]::new));
+		Collections.addAll(hsUsedValues, Arrays.stream(super.getColumn(iCol)).boxed().toArray(Integer[]::new));
+		Collections.addAll(hsUsedValues, Arrays.stream(this.getRegion(iCol,iRow)).boxed().toArray(Integer[]::new));
+
+		hsCellRange.removeAll(hsUsedValues);
+		return hsCellRange; 
+	}
+	
 }
