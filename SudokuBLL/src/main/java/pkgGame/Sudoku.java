@@ -496,7 +496,7 @@ public class Sudoku extends LatinSquare {
 		public Cell GetNextCell(Cell c)
 		{
 			
-			int col = c.getiCol();
+		    int col = c.getiCol();
 		    int row = c.getiRow();
 		    int iSqrtSize = (int)Math.sqrt(iSize);
 		   
