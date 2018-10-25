@@ -9,7 +9,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Random;
 
+import pkgEnum.ePuzzleViolation;
 import pkgHelper.LatinSquare;
+import pkgHelper.PuzzleViolation;
 
 /**
  * Sudoku - This class extends LatinSquare, adding methods, constructor to
@@ -217,22 +219,15 @@ public class Sudoku extends LatinSquare {
 	 */
 	public boolean isPartialSudoku() {
 
-		if (!super.isLatinSquare()) {
+		super.setbIgnoreZero(true);
+		
+		super.ClearPuzzleViolation();
+
+		if(hasDuplicates())
 			return false;
-		}
 
-		for (int k = 0; k < this.getPuzzle().length; k++) {
-
-			if (super.hasDuplicates(getRegion(k))) {
-				return false;
-			}
-
-			if (!hasAllValues(getRow(0), getRegion(k))) {
-				return false;
-			}
-		}
-
-		if (ContainsZero()) {
+		if (!ContainsZero()) {
+			super.AddPuzzleViolation(new PuzzleViolation(ePuzzleViolation.MissingZero, 0));
 			return false;
 		}
 
@@ -252,14 +247,29 @@ public class Sudoku extends LatinSquare {
 	 */
 	public boolean isSudoku() {
 
-		if (!isPartialSudoku()) {
+		this.setbIgnoreZero(false);
+		
+		super.ClearPuzzleViolation();
+		
+		if(this.hasDuplicates())
+			return false;
+		
+		if(!super.isLatinSquare())
+			return false;
+		
+		for(int r=1; r<super.getLatinSquare().length; r++)
+		{
+			if(!this.hasAllValues(this.getRow(0), this.getRegion(r)))
+			{
+				return false;
+			}
+		}
+		
+		if(ContainsZero())
+		{
 			return false;
 		}
-
-		if (ContainsZero()) {
-			return false;
-		}
-
+		
 		return true;
 	}
 
@@ -332,7 +342,6 @@ public class Sudoku extends LatinSquare {
 	private void FillDiagonalRegions() {
 
 		for (int i = 0; i < iSize; i = i + iSqrtSize) {
-			System.out.println("Filling region: " + getRegionNbr(i, i));
 			SetRegion(getRegionNbr(i, i));
 			ShuffleRegion(getRegionNbr(i, i));
 		}
@@ -483,29 +492,42 @@ public class Sudoku extends LatinSquare {
 			Collections.shuffle(IstValidvalues);
 		}
 		
-		// need to be modified
+
 		public Cell GetNextCell(Cell c)
 		{
-			int col = 0;
-			int row = 0;
-			if(c.getiCol() >= iSize-1 && c.getiRow() >= iSize-1)
-			{
-				return null;
-			}
-			if(c.getiCol()==iSize-1)
-			{
-				row = c.getiRow()+1;
-				col = 0;
-			}
-			else
-			{
-				row = c.getiRow();
-				col = c.getiCol()+1;
-			}
+			
+			int col = c.getiCol();
+		    int row = c.getiRow();
+		    int iSqrtSize = (int)Math.sqrt(iSize);
+		   
+		    if (col >= iSize - iSqrtSize - 1  && row >= iSize -1 ){
+		    	return null;
+		    }
+		    
+	 	    if (col + 1 == iSize){
+	 	    	row = row + 1;
+	 	    	col = 0;
+	 	    	if (row/iSqrtSize == col/iSqrtSize) {
+	 	    		col = (row/iSqrtSize + 1) * iSqrtSize;
+		   	  	}
+	 	    }
+	 	    else
+	 	    {
+	 	    	col = col + 1;
+	 	    	if (row/iSqrtSize == col/iSqrtSize) {
+	 	    		col = (row/iSqrtSize + 1) * iSqrtSize;
+	 	    		if (col >= iSize) {
+	 	    			row = row + 1;
+	 	    			col = 0;
+	 	    		}	
+	 	    	}
+	 	    }
+	 	    return (Cell)cells.get(Objects.hash(row, col));
+	 	    
 		}
 	}
 	
-	// need to be modified
+	
 	private HashSet<Integer> getAllValidCellValues(int iCol, int iRow)
 	{
 		HashSet<Integer> hsCellRange = new HashSet<Integer>();
@@ -523,7 +545,7 @@ public class Sudoku extends LatinSquare {
 		return hsCellRange; 
 	}
 	
-	// need to be modified
+
 	private void SetCells()
 	{
 		for(int iRow = 0; iRow < iSize; iRow++)
@@ -534,13 +556,11 @@ public class Sudoku extends LatinSquare {
 				c.setIstValidvalues(this.getAllValidCellValues(iCol, iRow));
 				c.ShuffleValidValues();
 				cells.put(c.hashCode(), c);
-				
-				//Cell c1 = cells.get(Objects.hash(2,2));
 			}
 		}
 	}
 	
-	// need to be modified
+	
 	private boolean fillRemaining(Cell c)
 	{
 		if (c == null)
@@ -551,12 +571,13 @@ public class Sudoku extends LatinSquare {
 			if(isValidValue(c, num))
 			{
 				this.getPuzzle()[c.getiRow()][c.getiCol()] = num;
+			
+				if(fillRemaining(c.GetNextCell(c)))
+				{
+					return true;
+				}
+				this.getPuzzle()[c.getiRow()][c.getiCol()] = 0;
 			}
-			if(fillRemaining(c.GetNextCell(c)))
-			{
-				return true;
-			}
-			this.getPuzzle()[c.getiRow()][c.getiCol()] = 0;
 		}
 		return false;
 	}

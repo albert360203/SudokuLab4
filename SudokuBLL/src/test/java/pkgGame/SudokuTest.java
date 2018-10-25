@@ -122,9 +122,36 @@ public class SudokuTest {
 		}
 
 	}
-
-
-
-
+	
+	@Test
+	public void Sudoku_MyTest1() throws Exception 
+	{
+		try
+		{
+			Sudoku s1 = new Sudoku(9);
+			s1.PrintPuzzle();
+			assertTrue(s1.isSudoku());
+		}
+		catch(Exception e)
+		{
+			fail("Test failed to build a Sudoku");
+		}
+	}
+	
+	
+	@Test
+	public void Sudoku_MyTes2() throws Exception 
+	{
+		try
+		{
+			Sudoku s1 = new Sudoku(16);
+			s1.PrintPuzzle();
+			assertTrue(s1.isSudoku());
+		}
+		catch(Exception e)
+		{
+			fail("Test failed to build a Sudoku");
+		}
+	}
 
 }
